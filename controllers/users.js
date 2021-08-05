@@ -3,12 +3,17 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
+const {
+  msgNotFoundUser,
+  msgConflictUser,
+  msgSuccessSignUp,
+} = require('../utils/constants');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new NotFoundError('Пользователь по указанному ID не найден'))
+    .orFail(new NotFoundError(msgNotFoundUser))
     .then((user) => {
       res.send({
         name: user.name,
@@ -19,14 +24,14 @@ const getUserInfo = (req, res, next) => {
 };
 
 const updateUserInfo = (req, res, next) => {
-  const { name, about } = req.body;
+  const { name, email } = req.body;
   const { _id } = req.user;
 
-  User.findByIdAndUpdate(_id, { name, about }, {
+  User.findByIdAndUpdate(_id, { name, email }, {
     new: true,
     runValidators: true,
   })
-    .orFail(new NotFoundError('Пользователь по указанному ID не найден'))
+    .orFail(new NotFoundError(msgNotFoundUser))
     .then((user) => {
       res.send({
         name: user.name,
@@ -47,11 +52,11 @@ const createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'MongoError' && err.code === 11000) {
-        throw new ConflictError('Пользователь с данным email уже зарегистрирован');
+        throw new ConflictError(msgConflictUser);
       }
       next(err);
     })
-    .then(() => res.send({ message: 'Пользователь успешно зарегистрирован' }))
+    .then(() => res.send({ message: msgSuccessSignUp }))
     .catch(next);
 };
 
