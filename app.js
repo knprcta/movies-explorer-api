@@ -15,12 +15,12 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const app = express();
 
+app.use(requestLogger);
 app.use(limiter);
 app.use(helmet());
 app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(requestLogger);
 app.use(router);
 app.use(errorLogger);
 app.use(celebrateErrorHandler);
